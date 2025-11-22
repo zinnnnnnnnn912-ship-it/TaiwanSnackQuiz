@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Build Your Taiwan Snack Day</title>
+<style>
+  body {
+    font-family: "Noto Sans", sans-serif;
+    text-align: center;
+    background-image: url('background.jpg'); 
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    color: #333;
+    margin: 0;
+    padding: 0;
+  }
+
+  body::before {
+    content: "";
+    position: fixed;
+    top:0; left:0; right:0; bottom:0;
+    background: rgba(255,255,255,0.4);
+    z-index: -1;
+  }
+
+  h1 { margin-top: 20px; }
+  .option { 
+    display: inline-block; 
+    margin: 10px; 
+    cursor: pointer; 
+    vertical-align: top; 
+    opacity: 0;
+    transform: translateY(20px);
+    transition: all 0.5s ease;
+  }
+  .option.show {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  .option img { 
+    width: 150px; 
+    height: 150px; 
+    border-radius: 10px; 
+  }
+  #game, #result { margin-top: 30px; }
+  button { margin-top: 10px; padding: 10px 20px; font-size: 16px; cursor: pointer; }
+  #result img {
+    width: 200px; 
+    height: 200px; 
+    border-radius: 10px;
+    opacity: 0;
+    transform: scale(0.5);
+    transition: all 0.7s ease;
+  }
+  #result.show img {
+    opacity: 1;
+    transform: scale(1);
+  }
+</style>
+</head>
+<body>
+
+<h1>Build Your Taiwan Snack Day</h1>
+<div id="game">
+  <button onclick="startGame()">Start Game</button>
+</div>
+
+<audio id="bgMusic" loop>
+  <source src="music/background.mp3" type="audio/mpeg">
+</audio>
+
+<audio id="clickSound">
+  <source src="music/click.mp3" type="audio/mpeg">
+</audio>
+
+<script>
+const parts = [
+  {title: "Breakfast", options:["Soy Milk & Fried Dough","Steamed Bun","Rice Ball","Sandwich"], 
+   images:[
+     "images/part1_1.png",
+     "images/part1_2.png",
+     "images/part1_3.png",
+     "images/part1_4.png"
+   ]},
+  {title: "Morning Activity", options:["Morning Exercise","Traditional Market","Cafe","Bookstore Corner"],
+   images:[
+     "images/part2_1.png",
+     "images/part2_2.png",
+     "images/part2_3.png",
+     "images/part2_4.png"
+   ]},
+  {title: "Lunch", options:["Beef Noodle","Braised Pork Rice","Gua Bao","Fried Rice"],
+   images:[
+     "images/part3_1.png",
+     "images/part3_2.png",
+     "images/part3_3.png",
+     "images/part3_4.png"
+   ]},
+  {title: "Afternoon Activity", options:["Jiufen Old Street","Museum","Tea Garden","Taipei 101"],
+   images:[
+     "images/part4_1.png",
+     "images/part4_2.png",
+     "images/part4_3.png",
+     "images/part4_4.png"
+   ]},
+  {title: "Afternoon Snack", options:["Bubble Tea","Tofu Pudding","Wheel Cake","Ice Cream"],
+   images:[
+     "images/part5_1.png",
+     "images/part5_2.png",
+     "images/part5_3.png",
+     "images/part5_4.png"
+   ]},
+  {title: "Dinner", options:["Hot Pot","Xiao Long Bao","Night Market Delicacies","Fried Chicken"],
+   images:[
+     "images/part6_1.png",
+     "images/part6_2.png",
+     "images/part6_3.png",
+     "images/part6_4.png"
+   ]},
+  {title: "Evening Activity", options:["Night Market Walk","Fireworks","KTV","Riverside Walk"],
+   images:[
+     "images/part7_1.png",
+     "images/part7_2.png",
+     "images/part7_3.png",
+     "images/part7_4.png"
+   ]},
+  {title: "Late Night Snack", options:["Oyster Omelet","Salted Crispy Chicken","Stinky Tofu","Sweet Potato Balls"],
+   images:[
+     "images/part8_1.png",
+     "images/part8_2.png",
+     "images/part8_3.png",
+     "images/part8_4.png"
+   ]}
+];
+
+const results = {
+  "Bubble Tea": {desc:"Cute & sweet type, loves socializing and small joys", img:"images/result_pearl_tea.png"},
+  "Braised Pork Rice": {desc:"Traditional flavor lover, enjoys classic tastes", img:"images/result_lu_rou_fan.png"},
+  "Salted Crispy Chicken": {desc:"Night owl type, enjoys late night snacks with friends", img:"images/result_salt_chicken.png"},
+  "Oyster Omelet": {desc:"Adventurous taste seeker, likes exploring new flavors", img:"images/result_oyster_omelet.png"},
+  "Stinky Tofu": {desc:"Bold & unique type, has a distinct personality", img:"images/result_stinky_tofu.png"},
+  "Sweet Potato Balls": {desc:"Energetic & cute, loves street snacks and relaxed life", img:"images/result_sweet_potato_ball.png"},
+  "Tofu Pudding": {desc:"Warm & sweet type, enjoys simple and comfy life", img:"images/result_tofu_pudding.png"},
+  "Wheel Cake": {desc:"Optimistic type, enjoys traditional snacks and spontaneous fun", img:"images/result_wheel_cake.png"},
+  "Ice Cream": {desc:"Dessert lover, enjoys variety and leisurely moments", img:"images/result_ice_cream.png"}
+};
+
+let scores = {"Bubble Tea":0,"Braised Pork Rice":0,"Salted Crispy Chicken":0,"Oyster Omelet":0,"Stinky Tofu":0,"Sweet Potato Balls":0,"Tofu Pudding":0,"Wheel Cake":0,"Ice Cream":0};
+let currentPart = 0;
+
+function startGame(){
+  document.getElementById("bgMusic").play();
+  showPart(currentPart);
+}
+
+function showPart(index){
+  let gameDiv = document.getElementById("game");
+  gameDiv.innerHTML = `<h2>${parts[index].title}</h2>`;
+  parts[index].options.forEach((option,i)=>{
+    let div = document.createElement("div");
+    div.className = "option";
+    div.innerHTML = `<img src="${parts[index].images[i]}" alt="${option}"><br>${option}`;
+    div.onclick = ()=>{
+      document.getElementById("clickSound").play();
+      chooseOption(option);
+    };
+    gameDiv.appendChild(div);
+    setTimeout(()=>div.classList.add('show'), i*200);
+  });
+}
+
+function chooseOption(option){
+  if(results[option]) scores[option]++;
+  currentPart++;
+  if(currentPart < parts.length){
+    showPart(currentPart);
+  } else {
+    showResult();
+  }
+}
+
+function showResult(){
+  let gameDiv = document.getElementById("game");
+  let maxScore = 0;
+  let result = "";
+  for(let key in scores){
+    if(scores[key] > maxScore){
+      maxScore = scores[key];
+      result = key;
+    }
+  }
+  let res = results[result];
+  gameDiv.innerHTML = `
+    <h2>Your Taiwan Snack Personality: ${result}</h2>
+    <div id="result">
+      <img src="${res.img}" alt="${result}">
+      <p>${res.desc}</p>
+      <button onclick="restartGame()">Play Again</button>
+    </div>
+  `;
+  setTimeout(()=>document.getElementById('result').classList.add('show'), 100);
+}
+
+function restartGame(){
+  scores = {"Bubble Tea":0,"Braised Pork Rice":0,"Salted Crispy Chicken":0,"Oyster Omelet":0,"Stinky Tofu":0,"Sweet Potato Balls":0,"Tofu Pudding":0,"Wheel Cake":0,"Ice Cream":0};
+  currentPart = 0;
+  showPart(currentPart);
+}
+</script>
+
+</body>
+</html>
